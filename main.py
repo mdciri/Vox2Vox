@@ -7,7 +7,7 @@ import concurrent.futures
 from tensorflow.keras.utils import to_categorical
 from sys import stdout
 
-form image_loader import *
+from image_loader import *
 from data_generator import *
 from vox2vox_architecture import *
 
