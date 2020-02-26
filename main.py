@@ -3,7 +3,6 @@ import tensorflow as tf
 import nibabel as nib
 import glob
 import time
-import concurrent.futures
 from tensorflow.keras.utils import to_categorical
 from sys import stdout
 
