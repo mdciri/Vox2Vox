@@ -1,3 +1,6 @@
+import numpy as np
+import nibabel as nib
+
 def load_img(img_files):
     ''' Load one image and its target form file
     '''
