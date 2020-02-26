@@ -146,11 +146,9 @@ class vox2vox():
         # Train Discriminator
         disc_loss_real = self.discriminator.fit([Ybatch, Xbatch], tf.ones(disc_output_shape), verbose=0, use_multiprocessing=mp, workers=n_workers)
         disc_loss_fake = self.discriminator.fit([gen_output, Xbatch], tf.zeros(disc_output_shape), verbose=0, use_multiprocessing=mp, workers=n_workers)
-        #disc_loss = disc_loss_real['loss'][0] + disc_loss_fake['loss'][0]
 
         # Train Generator
-        gen_loss = self.combined.fit([Ybatch, Xbatch], [tf.ones(disc_output_shape), Ybatch], verbose=0, use_multiprocessing=mp, workers=16)
-        #g_loss = [gen_loss.history['loss'][0], gen_loss.history['Discriminator_loss'][0], gen_loss.history['Generator_loss'][0]]
+        gen_loss = self.combined.fit([Ybatch, Xbatch], [tf.ones(disc_output_shape), Ybatch], verbose=0, use_multiprocessing=mp, workers=n_workers)
         
         return gen_loss
     
@@ -165,14 +163,11 @@ class vox2vox():
         # Train Discriminator
         disc_loss_real = self.discriminator.evaluate([Ybatch, Xbatch], tf.ones(disc_output_shape), verbose=0, use_multiprocessing=mp, workers=n_workers)
         disc_loss_fake = self.discriminator.evaluate([gen_output, Xbatch], tf.zeros(disc_output_shape), verbose=0, use_multiprocessing=mp, workers=n_workers)
-        #disc_loss = disc_loss_real['loss'][0] + disc_loss_fake['loss'][0]
 
         # Train Generator
         gen_loss = self.combined.evaluate([Ybatch, Xbatch], [tf.ones(disc_output_shape), Ybatch], verbose=0, use_multiprocessing=mp, workers=n_workers)
-        #g_loss = [gen_loss.history['loss'][0], gen_loss.history['Discriminator_loss'][0], gen_loss.history['Generator_loss'][0]]
         
         return gen_loss
-
     
     def train(self, train_generator, valid_generator, nEpochs):
         print('Training process:')
