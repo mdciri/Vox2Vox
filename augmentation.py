@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.ndimage.interpolation import affine_transform
 import elasticdeform
-from scipy import stats
 import multiprocessing as mp
 
 def patch_extraction(Xb, yb, sizePatches=128, Npatches=1):
@@ -45,7 +44,7 @@ def rotation3D(X, y):
     Rotate a 3D image with alfa, beta and gamma degree respect the axis x, y and z respectively.
     The three angles are chosen randomly between 0-30 degrees
     """
-    alpha, beta, gamma = np.random.randint(0, 31, size=3)/180*np.pi
+    alpha, beta, gamma = np.pi*np.random.random_sample()/2
     Rx = np.array([[1, 0, 0],
                    [0, np.cos(alpha), -np.sin(alpha)],
                    [0, np.sin(alpha), np.cos(alpha)]])
@@ -73,35 +72,25 @@ def brightness(X, y):
     Gain and gamma are chosen randomly for each image channel.
     
     Gain chosen between [0.9 - 1.1]
-    Gamma chosen between [0.4 - 2.5]
+    Gamma chosen between [0.9 - 1.1]
     
     new_im = gain * im^gamma
     """
     
     X_new = np.zeros(X.shape)
     for c in range(X.shape[-1]):
-        im = X[:,:,:,c] - np.min(X[:,:,:,c]) # all positive values
-        
-        choice = np.random.random_sample((2,))
-        gain = (1.1 - 0.9) * np.random.random_sample() + 0.9
-        gamma = (2.5-1)*choice[0] + 1
-        
-        if choice[1]<0.5:
-            gamma = 1/gamma
-        
-        im_new = gain*(im**gamma)
-        
-        # the mode of new_im is where the background lie, so we must set again these values to 0
-        X_new[:,:,:,c] = im_new - stats.mode(im_new, axis=None)[0][0]
+        im = X[:,:,:,c]        
+        gain, gamma = (1.2 - 0.8) * np.random.random_sample(2,) + 0.8
+        im_new = np.sign(im)*gain*(np.abs(im)**gamma)
+        X_new[:,:,:,c] = im_new 
     
     return X_new, y
 
 def elastic(X, y):
     """
     Elastic deformation on a image and its target
-    """
-    
-    [Xel, yel] = elasticdeform.deform_random_grid([X, y], sigma=5, axis=[(0, 1, 2), (0, 1, 2)], order=[3, 0])
+    """  
+    [Xel, yel] = elasticdeform.deform_random_grid([X, y], sigma=2, axis=[(0, 1, 2), (0, 1, 2)], order=[1, 0], mode='constant')
     
     return Xel, yel
 
@@ -111,7 +100,7 @@ def random_decisions(N):
     N should be equal to the batch size
     """
     
-    decisions = np.zeros((N, 4)) # 4 is number of aug techniques to combine
+    decisions = np.zeros((N, 4)) # 4 is number of aug techniques to combine (patch extraction excluded)
     for n in range(N):
         decisions[n] = np.random.randint(2, size=4)
         
@@ -123,19 +112,24 @@ def combine_aug(X, y, do):
     """
     Xnew, ynew = X, y
     
-    if do[0] == 1:
-        Xnew, ynew = flip3D(Xnew, ynew)
+    # make sure to use at least the 25% of original images
+    if np.random.random_sample()>0.75:
+        return Xnew, ynew
+    
+    else:   
+        if do[0] == 1:
+            Xnew, ynew = flip3D(Xnew, ynew)
+
+        if do[1] == 1:
+            Xnew, ynew = brightness(Xnew, ynew)   
+
+        if do[2] == 1:
+            Xnew, ynew = rotation3D(Xnew, ynew)
+
+        if do[3] == 1:
+            Xnew, ynew = elastic(Xnew, ynew)
         
-    if do[1] == 1:
-        Xnew, ynew = brightness(Xnew, ynew)   
-        
-    if do[2] == 1:
-        Xnew, ynew = rotation3D(Xnew, ynew)
-        
-    if do[3] == 1:
-        Xnew, ynew = elastic(Xnew, ynew)
-        
-    return Xnew, ynew
+        return Xnew, ynew
 
 def aug_batch(Xb, Yb):
     """
@@ -144,8 +138,7 @@ def aug_batch(Xb, Yb):
     batch_size = len(Xb)
     newXb, newYb = np.empty_like(Xb), np.empty_like(Yb)
     
-    decisions = random_decisions(batch_size)
-    
+    decisions = random_decisions(batch_size)            
     inputs = [(X, y, do) for X, y, do in zip(Xb, Yb, decisions)]
     pool = mp.Pool(processes=8)
     multi_result = pool.starmap(combine_aug, inputs)
@@ -154,4 +147,4 @@ def aug_batch(Xb, Yb):
     for i in range(len(Xb)):
         newXb[i], newYb[i] = multi_result[i][0], multi_result[i][1]
         
-    return newXb, newYb  
+    return newXb, newYb 
