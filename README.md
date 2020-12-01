@@ -14,6 +14,4 @@ Requirements:
 - scipy                     1.5.2 
 - tensorflow                2.2.0   
 - tensorflow-addons         0.11.2  
-- tensorflow-base           2.2.0         
-- tensorflow-estimator      2.2.0   
 - tensorflow-gpu            2.2.0 
