@@ -7,7 +7,9 @@ Requirements:
 - matplotlib                3.3.2   
 - numpy                     1.19.2   
 - numpy-base                1.19.2          
-- python                    3.8.5         
+- python                    3.8.5  
+- scikit-learn              0.23.2 
+- scipy                     1.5.2 
 - tensorflow                2.2.0   
 - tensorflow-addons         0.11.2  
 - tensorflow-base           2.2.0         
