@@ -57,7 +57,7 @@ def fit(train_gen, valid_gen, epochs):
         os.mkdir(path)
         
     Nt = len(train_gen)
-    
+    history = {'train': [], 'valid': []}
     prev_loss = np.inf
     
     for e in range(epochs):
@@ -69,12 +69,14 @@ def fit(train_gen, valid_gen, epochs):
             stdout.write('\rBatch: {}/{} - loss: {:.4f} - dice_loss: {:.4f} - disc_loss: {:.4f}: {:.4f}'
                          .format(b, Nt, losses[0], losses[1], losses[2]))
             stdout.flush()
-            
+        history['train'].append(losses)
+        
         for Xb, yb in valid_gen:
             losses_val = test_step(Xb, yb)
         stdout.write('\n               loss_val: {:.4f} - dice_loss_val: {:.4f} - disc_loss_val: {:.4f}'
                      .format(losses_val[0], losses_val[1], losses_val[2]))
         stdout.flush()
+        history['valid'].append(losses_val)
         
         # save pred image at epoch e 
         y_pred = G.predict(Xb)
@@ -104,3 +106,5 @@ def fit(train_gen, valid_gen, epochs):
         print(' ')
         
         del Xb, yb, canvas, y_pred, y_true, idx
+        
+    return history
