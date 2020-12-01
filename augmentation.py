@@ -44,7 +44,7 @@ def rotation3D(X, y):
     Rotate a 3D image with alfa, beta and gamma degree respect the axis x, y and z respectively.
     The three angles are chosen randomly between 0-30 degrees
     """
-    alpha, beta, gamma = np.pi*np.random.random_sample()/2
+    alpha, beta, gamma = np.pi*np.random.random_sample(3,)/2
     Rx = np.array([[1, 0, 0],
                    [0, np.cos(alpha), -np.sin(alpha)],
                    [0, np.sin(alpha), np.cos(alpha)]])
