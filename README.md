@@ -1,8 +1,9 @@
 # Vox2Vox
 [Vox2Vox: 3D-GAN for Brain Tumour Segmentation.](https://arxiv.org/abs/2003.13653)
 
-The model is created and the training is performed using Tensorflow.
 The data used are the ones given for the Brain Tumour Segmentation (BraTS) Challenge 2020 ([link](https://www.med.upenn.edu/cbica/brats2020/data.html)).
+
+The model is created and the training is performed using Tensorflow.
 
 Requirements:
 - elasticdeform             0.4.6    
