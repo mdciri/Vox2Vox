@@ -2,6 +2,8 @@
 Vox2Vox: 3D voxel-to-voxel GAN for image segmentation.
 Paper available at: https://arxiv.org/abs/2003.13653.
 
+The model is created and the training is performed using Tensorflow.
+
 Requirements:
 - elasticdeform             0.4.6    
 - matplotlib                3.3.2   
