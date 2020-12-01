@@ -1,3 +1,6 @@
+import numpy as np
+import tensorflow as tf
+
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Flatten, Conv3D, Conv3DTranspose, Dropout, ReLU, LeakyReLU, Concatenate, Dense, Subtract
 from tensorflow.keras.optimizers import Adam
