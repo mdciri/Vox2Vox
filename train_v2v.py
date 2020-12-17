@@ -46,7 +46,7 @@ def test_step(image, target):
     disc_fake_output = D([image, gen_output], training=False)
     disc_loss = discriminator_loss(disc_real_output, disc_fake_output)
 
-    gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, siam_fake_output)
+    gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, class_weights)
         
     return gen_loss, dice_loss, disc_loss_gen
 
