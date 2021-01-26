@@ -139,6 +139,8 @@ def fit(train_gen, valid_gen, epochs):
     Nt = len(train_gen)
     
     prev_loss = np.inf
+    epoch_dice_loss = tf.keras.metrics.Mean()
+    epoch_dice_loss_val = tf.keras.metrics.Mean()
     
     for e in range(epochs):
         print('Epoch {}/{}'.format(e+1,epochs))
@@ -146,23 +148,29 @@ def fit(train_gen, valid_gen, epochs):
         for Xb, yb in train_gen:
             b += 1
             loss = train_step(Xb, yb)
-            stdout.write('\rBatch: {}/{} - dice_loss: {:.4f}'.format(b, Nt, loss))
+            epoch_dice_loss.update_state(loss)
+            stdout.write('\rBatch: {}/{} - dice_loss: {:.4f}'.format(b, Nt, epoch_dice_loss.result()))
             stdout.flush()
             
         for Xb, yb in valid_gen:
             loss_val = test_step(Xb, yb)
-        stdout.write('\n               dice_loss_val: {:.4f}'.format(loss_val))
+            epoch_dice_loss_val.update_state(loss_val)
+        stdout.write('\n               dice_loss_val: {:.4f}'.format(epoch_dice_loss_val.result()))
         stdout.flush()
         
         # save models
         print(' ')
-        if loss_val[0] < prev_loss:    
+        if epoch_dice_loss_val.result() < prev_loss:    
             E.save_weights(path + '/Ensembler.h5') 
             print("Validation loss decresaed from {:.4f} to {:.4f}. Models' weights are now saved."
-                  .format(prev_loss, loss_val))
-            prev_loss = losses_val[0]
+                  .format(prev_loss, epoch_dice_loss_val.result()))
+            prev_loss = epoch_dice_loss_val.result()
         else:
             print("Validation loss did not decrese from {:.4f}.".format(prev_loss))
         print(' ')
+        
+        # reset losses state
+        epoch_dice_loss.reset_states()
+        epoch_dice_loss_val.reset_states()
         
         del Xb, yb
