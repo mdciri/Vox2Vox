@@ -60,23 +60,38 @@ def fit(train_gen, valid_gen, epochs):
     history = {'train': [], 'valid': []}
     prev_loss = np.inf
     
+    epoch_v2v_loss = tf.keras.metrics.Mean()
+    epoch_dice_loss = tf.keras.metrics.Mean()
+    epoch_disc_loss = tf.keras.metrics.Mean()
+    epoch_v2v_loss_val = tf.keras.metrics.Mean()
+    epoch_dice_loss_val = tf.keras.metrics.Mean()
+    epoch_disc_loss_val = tf.keras.metrics.Mean()
+    
     for e in range(epochs):
         print('Epoch {}/{}'.format(e+1,epochs))
         b = 0
         for Xb, yb in train_gen:
             b += 1
             losses = train_step(Xb, yb)
-            stdout.write('\rBatch: {}/{} - loss: {:.4f} - dice_loss: {:.4f} - disc_loss: {:.4f}: {:.4f}'
-                         .format(b, Nt, losses[0], losses[1], losses[2]))
+            epoch_v2v_loss.update_state(losses[0])
+            epoch_dice_loss.update_state(losses[1])
+            epoch_disc_loss.update_state(losses[2])
+            
+            stdout.write('\rBatch: {}/{} - loss: {:.4f} - dice_loss: {:.4f} - disc_loss: {:.4f}'
+                         .format(b, Nt, epoch_v2v_loss.result(), epoch_dice_loss.result(), epoch_disc_loss.result()))
             stdout.flush()
-        history['train'].append(losses)
+        history['train'].append([epoch_v2v_loss.result(), epoch_dice_loss.result(), epoch_disc_loss.result()])
         
         for Xb, yb in valid_gen:
             losses_val = test_step(Xb, yb)
+            epoch_v2v_loss_val.update_state(losses_val[0])
+            epoch_dice_loss_val.update_state(losses_val[1])
+            epoch_disc_loss_val.update_state(losses_val[2])
+            
         stdout.write('\n               loss_val: {:.4f} - dice_loss_val: {:.4f} - disc_loss_val: {:.4f}'
-                     .format(losses_val[0], losses_val[1], losses_val[2]))
+                     .format(epoch_v2v_loss_val.result(), epoch_dice_loss_val.result(), epoch_disc_loss_val.result()))
         stdout.flush()
-        history['valid'].append(losses_val)
+        history['valid'].append([epoch_v2v_loss_val.result(), epoch_dice_loss_val.result(), epoch_disc_loss_val.result()])
         
         # save pred image at epoch e 
         y_pred = G.predict(Xb)
@@ -96,14 +111,22 @@ def fit(train_gen, valid_gen, epochs):
         
         # save models
         print(' ')
-        if losses_val[0] < prev_loss:    
+        if epoch_v2v_loss_val.result() < prev_loss:    
             G.save_weights(path + '/Generator.h5') 
             D.save_weights(path + '/Discriminator.h5')
-            print("Validation loss decresaed from {:.4f} to {:.4f}. Models' weights are now saved.".format(prev_loss, losses_val[0]))
-            prev_loss = losses_val[0]
+            print("Validation loss decresaed from {:.4f} to {:.4f}. Models' weights are now saved.".format(prev_loss, epoch_v2v_loss_val.result()))
+            prev_loss = epoch_v2v_loss_val.result()
         else:
             print("Validation loss did not decrese from {:.4f}.".format(prev_loss))
         print(' ')
+        
+        # resets losses states
+        epoch_v2v_loss.reset_states()
+        epoch_dice_loss.reset_states()
+        epoch_disc_loss.reset_states()
+        epoch_v2v_loss_val.reset_states()
+        epoch_dice_loss_val.reset_states()
+        epoch_disc_loss_val.reset_states()
         
         del Xb, yb, canvas, y_pred, y_true, idx
         
