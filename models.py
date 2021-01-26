@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Flatten, Conv3D, Conv3DTranspose, Dropout, ReLU, LeakyReLU, Concatenate, Dense, Subtract
+from tensorflow.keras.layers import Input, Flatten, Conv3D, Conv3DTranspose, Dropout, ReLU, LeakyReLU, Concatenate, ZeroPadding3D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import MeanSquaredError
 
@@ -14,7 +14,7 @@ def Generator():
     Generator model
     '''
     def encoder_step(layer, Nf, norm=True):
-        x = Conv3D(Nf, kernel_size=5, strides=2, kernel_initializer='he_normal', padding='same')(layer)
+        x = Conv3D(Nf, kernel_size=4, strides=2, kernel_initializer='he_normal', padding='same')(layer)
         if norm:
             x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
@@ -23,7 +23,7 @@ def Generator():
         return x
 
     def bottlenek(layer, Nf):
-        x = Conv3D(Nf, kernel_size=5, strides=2, kernel_initializer='he_normal', padding='same')(layer)
+        x = Conv3D(Nf, kernel_size=4, strides=2, kernel_initializer='he_normal', padding='same')(layer)
         x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
         for i in range(4):
@@ -46,14 +46,15 @@ def Generator():
     inputs = Input((128,128,128,4), name='input_image')
     Nfilter_start = 64
     depth = 4
+    ks = 4
     x = inputs
 
     # encoder
     for d in range(depth-1):
         if d==0:
-            x = encoder_step(x, Nfilter_start*np.power(2,d), False)
+            x = encoder_step(x, Nfilter_start*np.power(2,d), ks, False)
         else:
-            x = encoder_step(x, Nfilter_start*np.power(2,d))
+            x = encoder_step(x, Nfilter_start*np.power(2,d), ks)
         layers_to_concatenate.append(x)
 
     # bottlenek
@@ -76,10 +77,11 @@ def Discriminator():
     inputs = Input((128,128,128,4), name='input_image')
     targets = Input((128,128,128,4), name='target_image')
     Nfilter_start = 64
-    depth = 4
+    depth = 3
+    ks = 4
 
     def encoder_step(layer, Nf, norm=True):
-        x = Conv3D(Nf, kernel_size=5, strides=2, kernel_initializer='he_normal', padding='same')(layer)
+        x = Conv3D(Nf, kernel_size=ks, strides=2, kernel_initializer='he_normal', padding='same')(layer)
         if norm:
             x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
@@ -94,16 +96,21 @@ def Discriminator():
             x = encoder_step(x, Nfilter_start*np.power(2,d), False)
         else:
             x = encoder_step(x, Nfilter_start*np.power(2,d))
-
-
-    last = Conv3D(1, 5, strides=1, padding='same', kernel_initializer='he_normal', name='output_discriminator')(x) 
+            
+    x = ZeroPadding3D()
+    x = Conv3D(Nf*(2**depth), ks, strides=1, padding='valid', kernel_initializer='he_normal')(x) 
+    x = InstanceNormalization()(x)
+    x = x = LeakyReLU()(x)
+      
+    x = ZeroPadding3D()
+    last = Conv3D(1, ks, strides=1, padding='same', kernel_initializer='he_normal', name='output_discriminator')(x) 
 
     return Model(inputs=[targets, inputs], outputs=last, name='Discriminator')
 
 def ensembler():
 
     start = Input((128,128,128,40))
-    x = Conv3D(64, kernel_size=5, kernel_initializer='he_normal', padding='same')(start)
+    x = Conv3D(64, kernel_size=3, kernel_initializer='he_normal', padding='same')(start)
     fin = Conv3D(tar_shape[-1], kernel_size=3, kernel_initializer='he_normal', padding='same', activation='softmax')(start)
 
     return Model(inputs=start, outputs=fin, name='Ensembler')
