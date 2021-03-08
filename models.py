@@ -100,7 +100,7 @@ def Discriminator():
     x = ZeroPadding3D()
     x = Conv3D(Nf*(2**depth), ks, strides=1, padding='valid', kernel_initializer='he_normal')(x) 
     x = InstanceNormalization()(x)
-    x = x = LeakyReLU()(x)
+    x = LeakyReLU()(x)
       
     x = ZeroPadding3D()
     last = Conv3D(1, ks, strides=1, padding='valid', kernel_initializer='he_normal', name='output_discriminator')(x) 
@@ -111,6 +111,8 @@ def ensembler():
 
     start = Input((128,128,128,40))
     x = Conv3D(64, kernel_size=3, kernel_initializer='he_normal', padding='same')(start)
+    x = InstanceNormalization()(x)
+    x = LeakyReLU()(x)
     fin = Conv3D(4, kernel_size=3, kernel_initializer='he_normal', padding='same', activation='softmax')(x)
 
     return Model(inputs=start, outputs=fin, name='Ensembler')
