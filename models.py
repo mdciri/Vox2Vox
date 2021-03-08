@@ -110,9 +110,6 @@ def Discriminator():
 def ensembler():
 
     start = Input((128,128,128,40))
-    x = Conv3D(64, kernel_size=3, kernel_initializer='he_normal', padding='same')(start)
-    x = InstanceNormalization()(x)
-    x = LeakyReLU()(x)
-    fin = Conv3D(4, kernel_size=3, kernel_initializer='he_normal', padding='same', activation='softmax')(x)
+    fin = Conv3D(4, kernel_size=3, kernel_initializer='he_normal', padding='same', activation='softmax')(start)
 
     return Model(inputs=start, outputs=fin, name='Ensembler')
