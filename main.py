@@ -17,9 +17,6 @@ from losses import *
 from models import *
 from train_v2v import *
 
-%load_ext autoreload
-%autoreload 2
-
 Nclasses = 4
 classes = np.arange(Nclasses)
 
