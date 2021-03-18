@@ -1,7 +1,7 @@
 # Vox2Vox
 [Vox2Vox: 3D-GAN for Brain Tumour Segmentation.](https://arxiv.org/abs/2003.13653)
 
-This paper was accepted in the [6th International Workshop, BrainLes 2020, Held in Conjunction with MICCAI 2020](https://www.springer.com/gp/book/9783030720834)
+This paper was accepted in the [6th International Workshop, BrainLes 2020, Held in Conjunction with MICCAI 2020](https://www.springer.com/gp/book/9783030720834).
 
 The data used are the ones given for the Brain Tumour Segmentation (BraTS) Challenge 2020 ([link](https://www.med.upenn.edu/cbica/brats2020/data.html)).
 
