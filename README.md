@@ -2,7 +2,7 @@
 
 Vox2Vox is a 3D-GAN, inpired my the Pix2Pix GAN by Isola, to do brain tumor segmentation.
 
-The paper about the Vox2Vox model is printed in the [6th International Workshop, BrainLes 2020, Held in Conjunction with MICCAI 2020](https://link.springer.com/book/10.1007%2F978-3-030-72084-1). You can also find it in [arXiv](https://arxiv.org/abs/2003.13653).
+The paper about the Vox2Vox model is published in the [6th International Workshop, BrainLes 2020, Held in Conjunction with MICCAI 2020](https://link.springer.com/book/10.1007%2F978-3-030-72084-1). You can also find it in [arXiv](https://arxiv.org/abs/2003.13653).
 
 The data used are the ones provided by the [Brain Tumour Segmentation (BraTS) Challenge 2020](https://www.med.upenn.edu/cbica/brats2020/data.html).
 
