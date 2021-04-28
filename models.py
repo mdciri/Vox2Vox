@@ -13,8 +13,8 @@ def Generator():
     '''
     Generator model
     '''
-    def encoder_step(layer, Nf, norm=True):
-        x = Conv3D(Nf, kernel_size=4, strides=2, kernel_initializer='he_normal', padding='same')(layer)
+    def encoder_step(layer, Nf, ks, norm=True):
+        x = Conv3D(Nf, kernel_size=ks, strides=2, kernel_initializer='he_normal', padding='same')(layer)
         if norm:
             x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
@@ -22,20 +22,20 @@ def Generator():
 
         return x
 
-    def bottlenek(layer, Nf):
-        x = Conv3D(Nf, kernel_size=4, strides=2, kernel_initializer='he_normal', padding='same')(layer)
+    def bottlenek(layer, Nf, ks):
+        x = Conv3D(Nf, kernel_size=ks, strides=2, kernel_initializer='he_normal', padding='same')(layer)
         x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
         for i in range(4):
-            y = Conv3D(Nf, kernel_size=5, strides=1, kernel_initializer='he_normal', padding='same')(x)
+            y = Conv3D(Nf, kernel_size=ks, strides=1, kernel_initializer='he_normal', padding='same')(x)
             x = InstanceNormalization()(y)
             x = LeakyReLU()(x)
             x = Concatenate()([x, y])
 
         return x
 
-    def decoder_step(layer, layer_to_concatenate, Nf):
-        x = Conv3DTranspose(Nf, kernel_size=5, strides=2, padding='same', kernel_initializer='he_normal')(layer)
+    def decoder_step(layer, layer_to_concatenate, Nf, ks):
+        x = Conv3DTranspose(Nf, kernel_size=ks, strides=2, padding='same', kernel_initializer='he_normal')(layer)
         x = InstanceNormalization()(x)
         x = LeakyReLU()(x)
         x = Concatenate()([x, layer_to_concatenate])
@@ -58,14 +58,14 @@ def Generator():
         layers_to_concatenate.append(x)
 
     # bottlenek
-    x = bottlenek(x, Nfilter_start*np.power(2,depth-1))
+    x = bottlenek(x, Nfilter_start*np.power(2,depth-1), ks)
 
     # decoder
     for d in range(depth-2, -1, -1): 
-        x = decoder_step(x, layers_to_concatenate.pop(), Nfilter_start*np.power(2,d))
+        x = decoder_step(x, layers_to_concatenate.pop(), Nfilter_start*np.power(2,d), ks)
 
     # classifier
-    last = Conv3DTranspose(4, kernel_size=5, strides=2, padding='same', kernel_initializer='he_normal', activation='softmax', name='output_generator')(x)
+    last = Conv3DTranspose(4, kernel_size=ks, strides=2, padding='same', kernel_initializer='he_normal', activation='softmax', name='output_generator')(x)
    
     return Model(inputs=inputs, outputs=last, name='Generator')
 
