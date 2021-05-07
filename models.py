@@ -98,7 +98,7 @@ def Discriminator():
             x = encoder_step(x, Nfilter_start*np.power(2,d))
             
     x = ZeroPadding3D()
-    x = Conv3D(Nf*(2**depth), ks, strides=1, padding='valid', kernel_initializer='he_normal')(x) 
+    x = Conv3D(Nfilter_start*(2**depth), ks, strides=1, padding='valid', kernel_initializer='he_normal')(x) 
     x = InstanceNormalization()(x)
     x = LeakyReLU()(x)
       
