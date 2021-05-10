@@ -97,12 +97,12 @@ def Discriminator():
         else:
             x = encoder_step(x, Nfilter_start*np.power(2,d))
             
-    x = ZeroPadding3D()
+    x = ZeroPadding3D()(x)
     x = Conv3D(Nfilter_start*(2**depth), ks, strides=1, padding='valid', kernel_initializer='he_normal')(x) 
     x = InstanceNormalization()(x)
     x = LeakyReLU()(x)
       
-    x = ZeroPadding3D()
+    x = ZeroPadding3D()(x)
     last = Conv3D(1, ks, strides=1, padding='valid', kernel_initializer='he_normal', name='output_discriminator')(x) 
 
     return Model(inputs=[targets, inputs], outputs=last, name='Discriminator')
