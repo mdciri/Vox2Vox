@@ -3,7 +3,7 @@
 
 import argparse
 
-parser = argparse.ArgumentParser('BoTRis training and validation script', add_help=False)
+parser = argparse.ArgumentParser('Vox2Vox training and validation script', add_help=False)
 
 ## training parameters
 parser.add_argument('-g', '--gpu', default=0, type=int, help='GPU position')
