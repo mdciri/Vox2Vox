@@ -18,7 +18,7 @@ def discriminator_loss(disc_real_output, disc_fake_output):
     return disc_loss
 
 
-def generator_loss(target, gen_output, disc_fake_output, class_weights):
+def generator_loss(target, gen_output, disc_fake_output, class_weights, alpha):
     
     # generalized dice loss
     dice_loss = diceLoss(target, gen_output, class_weights)
