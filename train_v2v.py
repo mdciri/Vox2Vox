@@ -19,7 +19,7 @@ generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
 @tf.function
-def train_step(image, target):
+def train_step(image, target, alpha):
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
 
         gen_output = G(image, training=True)
@@ -28,7 +28,7 @@ def train_step(image, target):
         disc_fake_output = D([image, gen_output], training=True)
         disc_loss = discriminator_loss(disc_real_output, disc_fake_output)
         
-        gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, class_weights)
+        gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, class_weights, alpha)
 
     generator_gradients = gen_tape.gradient(gen_loss, G.trainable_variables)
     discriminator_gradients = disc_tape.gradient(disc_loss, D.trainable_variables)
@@ -39,18 +39,18 @@ def train_step(image, target):
     return gen_loss, dice_loss, disc_loss_gen
         
 @tf.function
-def test_step(image, target):
+def test_step(image, target, alpha):
     gen_output = G(image, training=False)
 
     disc_real_output = D([image, target], training=False)
     disc_fake_output = D([image, gen_output], training=False)
     disc_loss = discriminator_loss(disc_real_output, disc_fake_output)
 
-    gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, class_weights)
+    gen_loss, dice_loss, disc_loss_gen = generator_loss(target, gen_output, disc_fake_output, class_weights, alpha)
         
     return gen_loss, dice_loss, disc_loss_gen
 
-def fit(train_gen, valid_gen, epochs):
+def fit(train_gen, valid_gen, alpha, epochs):
     
     path = './RESULTS' 
     if os.path.exists(path)==False:
@@ -72,7 +72,7 @@ def fit(train_gen, valid_gen, epochs):
         b = 0
         for Xb, yb in train_gen:
             b += 1
-            losses = train_step(Xb, yb)
+            losses = train_step(Xb, yb, alpha)
             epoch_v2v_loss.update_state(losses[0])
             epoch_dice_loss.update_state(losses[1])
             epoch_disc_loss.update_state(losses[2])
@@ -83,7 +83,7 @@ def fit(train_gen, valid_gen, epochs):
         history['train'].append([epoch_v2v_loss.result(), epoch_dice_loss.result(), epoch_disc_loss.result()])
         
         for Xb, yb in valid_gen:
-            losses_val = test_step(Xb, yb)
+            losses_val = test_step(Xb, yb, alpha)
             epoch_v2v_loss_val.update_state(losses_val[0])
             epoch_dice_loss_val.update_state(losses_val[1])
             epoch_disc_loss_val.update_state(losses_val[2])
