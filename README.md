@@ -21,9 +21,9 @@ Requirements:
 - tensorflow-gpu            2.2.0 
 
 
-to train the model just type in your terminal the command:
+to train the model just type in your terminal the command: python ./main.py
 
-  python ./main.py
+
   
 You can alos add these parameter in the command in case you would like to change some parameters:
 
