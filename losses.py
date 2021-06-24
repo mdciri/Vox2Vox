@@ -27,6 +27,6 @@ def generator_loss(target, gen_output, disc_fake_output, class_weights, alpha):
     disc_loss = tf.math.reduce_mean(tf.math.pow(tf.ones_like(disc_fake_output) - disc_fake_output, 2))
        
     # total loss
-    gen_loss = 5*dice_loss + disc_loss
+    gen_loss = alpha*dice_loss + disc_loss
 
     return gen_loss, dice_loss, disc_loss
