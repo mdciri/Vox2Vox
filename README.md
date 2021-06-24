@@ -28,7 +28,11 @@ to train the model just type in your terminal the command:
 You can alos add these parameter in the command in case you would like to change some parameters:
 
 '-g' or '--gpu': GPU position, defaul 0
+
 '-nc' or '--num_classes': number of classes, default 4
+
 '-bs' or '--batch_size': batch size, default 4
+
 '-a' or '--alpha': alpha weight between the generator and the discriminator, default 5
+
 '-ne' or '--num_epochs': number of epochs, default 200
