@@ -1,6 +1,34 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+import argparse
+
+parser = argparse.ArgumentParser('BoTRis training and validation script', add_help=False)
+
+## training parameters
+parser.add_argument('-g', '--gpu', default=0, type=int, help='GPU position')
+parser.add_argument('-nc', '--num_classes', default=4, type=int, help='number of classes')
+parser.add_argument('-bs', '--batch_size', default=8, type=int, help='batch size')
+parser.add_argument('-a', '--alpha', default=5, type=int, help='alpha weight')
+parser.add_argument('-ne', '--num_epochs', default=200, type=int, help='number of epochs')
+
+args = parser.parse_args()
+gpu = args.gpu
+n_classes = args.num_classes
+batch_size = args.batch_size
+alpha = args.alpha
+n_epochs = args.num_epochs
+
+
 import os
-import numpy as np
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]=str(gpu)
+
 import tensorflow as tf
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+import numpy as np
 import nibabel as nib
 import glob
 import time
@@ -39,8 +67,8 @@ for i in idxTrain:
 for i in idxValid:
     sets['valid'].append([t1_list[i], t2_list[i], t1ce_list[i], flair_list[i], seg_list[i]])
     
-train_gen = DataGenerator(sets['train'], augmentation=True)
-valid_gen = DataGenerator(sets['valid'], augmentation=True)
+train_gen = DataGenerator(sets['train'], batch_size=batch_size, n_classes=n_classes, augmentation=True)
+valid_gen = DataGenerator(sets['valid'], batch_size=batch_size, n_classes=n_classes, augmentation=True)
     
 # train the vox2vox model
-h = fit(train_gen, valid_gen, 200)
+h = fit(train_gen, valid_gen, alpha, n_epochs)
